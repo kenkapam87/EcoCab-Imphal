@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EcoCab Imphal — Singjamei Wangma, Mongkhanglambi</title>
+  <meta name="description" content="EcoCab Imphal - electric taxi service based in Singjamei Wangma, Mongkhanglambi, Imphal East. Owner: Kennedy Nong." />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="" crossorigin=""/>
+  <style>
+    :root{--accent:#0ea5a4;--muted:#6b7280;--bg:#f7faf9}
+    *{box-sizing:border-box}
+    body{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial; margin:0;background:var(--bg);color:#0f172a}
+    .wrap{max-width:1100px;margin:18px auto;padding:18px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:64px;height:64px;border-radius:14px;background:linear-gradient(135deg,#10b981,#06b6d4);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:20px}
+    h1{margin:0;font-size:22px}
+    .muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:1fr 380px;gap:16px;margin-top:14px}
+    .card{background:white;padding:16px;border-radius:12px;box-shadow:0 8px 24px rgba(2,6,23,0.06)}
+    #map{height:360px;border-radius:10px}
+    label{display:block;font-size:13px;margin-bottom:6px}
+    input,select,textarea,button{font-size:14px}
+    input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #e6eef2;margin-bottom:8px}
+    .btn{padding:10px 12px;border-radius:8px;border:0;cursor:pointer}
+    .btn.primary{background:var(--accent);color:white}
+    .small{font-size:13px;color:var(--muted)}
+    .features{display:flex;gap:10px;margin-top:12px}
+    .feature{flex:1;padding:10px;border-radius:10px;background:#f0fdfa;text-align:center}
+    .chat-box{height:260px;overflow:auto;padding:8px;border:1px solid #eef2f6;border-radius:8px;background:#fbfffef}
+    .message{margin:8px 0;padding:8px;border-radius:8px;max-width:78%}
+    .me{background:#d1fae5;margin-left:auto}
+    .bot{background:#eef2ff;margin-right:auto}
+    footer{margin-top:14px;text-align:center;color:var(--muted)}
+    @media(max-width:940px){.grid{grid-template-columns:1fr}.brand{gap:8px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo">EC</div>
+        <div>
+          <h1>EcoCab Imphal</h1>
+          <div class="small">Electric taxi service — Singjamei Wangma, Mongkhanglambi, Imphal East, 795008</div>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div class="small">Owner</div>
+        <div style="font-weight:700">Kennedy Nong</div>
+        <div class="small" style="margin-top:6px">Contact: <span id="contact">TBD</span></div>
+      </div>
+    </header>
+
+    <main class="grid">
+      <section>
+        <div class="card">
+          <h3 style="margin-top:0">Book a Ride — Live Map & Fare Estimate</h3>
+          <p class="small">Set pickup and drop on the map (or use your current location). Fare = <strong>₹25 / km</strong>.</p>
+
+          <div id="map"></div>
+
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <div style="flex:1">
+              <label>Pickup (click on map or use current location)</label>
+              <input id="pickup-address" placeholder="Pickup coordinates or address" readonly />
+            </div>
+            <div style="width:140px">
+              <label>Ride type</label>
+              <select id="ride-type">
+                <option>Hatchback (Economy)</option>
+                <option>Sedan (Comfort)</option>
+                <option>SUV (Premium)</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <div style="flex:1">
+              <label>Drop location (click on map)</label>
+              <input id="drop-address" placeholder="Drop coordinates or address" readonly />
+            </div>
+            <div style="width:130px;display:flex;flex-direction:column;justify-content:flex-end">
+              <button class="btn primary" id="estimate">Estimate Fare</button>
+            </div>
+          </div>
+
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <div class="card" style="flex:1;padding:10px;">Distance: <strong id="distance">0</strong> km</div>
+            <div class="card" style="width:180px;padding:10px;">Estimated fare: <strong id="fare">₹0</strong></div>
+            <div style="margin-left:auto"><button class="btn" id="request-ride">Request Ride</button></div>
+          </div>
+
+          <div class="features">
+            <div class="feature">Electric vehicles only<br><span class="small">Zero emissions</span></div>
+            <div class="feature">GPS tracking<br><span class="small">Real-time location</span></div>
+            <div class="feature">Driver verification<br><span class="small">Background checks</span></div>
+          </div>
+
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <h4 style="margin-top:0">About EcoCab Imphal</h4>
+          <p class="small">EcoCab Imphal provides safe, electric taxi services around Imphal East. Based in Singjamei Wangma, Mongkhanglambi. Owner: Kennedy Nong.</p>
+          <p class="small">This demo page includes a client-side map and booking UI. To go live you should connect the request actions to your backend / dispatch system and payment gateway.</p>
+        </div>
+
+      </section>
+
+      <aside>
+        <div class="card">
+          <h4 style="margin-top:0">Live Chat</h4>
+          <div class="chat-box" id="chat-box"></div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <input id="chat-input" placeholder="Type message (support bot)" />
+            <button class="btn primary" id="send-chat">Send</button>
+          </div>
+          <div class="small" style="margin-top:8px">This chat is a demo bot for quick answers. Connect to your support/chat provider (Twilio, Intercom, Firebase) for live agents.</div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <h4 style="margin-top:0">Feedback & Complaints</h4>
+          <form id="feedback-form">
+            <label>Your name</label>
+            <input id="fb-name" required />
+            <label>Contact (phone or email)</label>
+            <input id="fb-contact" />
+            <label>Type</label>
+            <select id="fb-type"><option>Feedback</option><option>Complaint</option></select>
+            <label>Message</label>
+            <textarea id="fb-message" rows="4" required></textarea>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button class="btn primary" type="submit">Submit</button>
+              <button class="btn" type="button" id="download-logs">Download logs</button>
+            </div>
+          </form>
+          <p class="small" style="margin-top:8px">Feedback & complaints are stored locally in this demo. Connect to your helpdesk or database for permanent records.</p>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <h4 style="margin-top:0">Gallery — Imphal</h4>
+          <!-- Replace these placeholders with high-resolution photos of Imphal / Manipur -->
+          <img src="https://via.placeholder.com/320x160?text=Manipur+Image+1" alt="Manipur image 1" style="width:100%;border-radius:8px;margin-bottom:8px" />
+          <img src="https://via.placeholder.com/320x160?text=Manipur+Image+2" alt="Manipur image 2" style="width:100%;border-radius:8px" />
+          <p class="small" style="margin-top:8px">Replace images with real photos from your fleet and region.</p>
+        </div>
+
+      </aside>
+    </main>
+
+    <footer style="margin-top:14px;text-align:center">
+      <div class="small">© <span id="year">2025</span> EcoCab Imphal — Singjamei Wangma, Mongkhanglambi, Imphal East, 795008 | Owner: Kennedy Nong | Contact: <span id="contact-footer">TBD</span></div>
+    </footer>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="" crossorigin=""></script>
+  <script>
+    // Basic app behavior: map, set markers, calculate haversine distance and fare (₹25/km)
+    const RATE_PER_KM = 25;
+
+    // init map
+    const map = L.map('map').setView([24.817, 93.936], 13); // center near Imphal
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+      maxZoom:19, attribution:'© OpenStreetMap contributors'
+    }).addTo(map);
+
+    let pickupMarker=null, dropMarker=null;
+    const pickupInput = document.getElementById('pickup-address');
+    const dropInput = document.getElementById('drop-address');
+
+    function toFixed2(n){return Math.round(n*100)/100}
+
+    function setMarker(latlng, type){
+      const icon = L.divIcon({className:'custom-marker', html: type==='pickup'?'<b>P</b>':'<b>D</b>', iconSize:[28,28]});
+      if(type==='pickup'){
+        if(pickupMarker) map.removeLayer(pickupMarker);
+        pickupMarker = L.marker(latlng,{icon}).addTo(map);
+        pickupInput.value = latlng.lat.toFixed(6)+', '+latlng.lng.toFixed(6);
+      } else {
+        if(dropMarker) map.removeLayer(dropMarker);
+        dropMarker = L.marker(latlng,{icon}).addTo(map);
+        dropInput.value = latlng.lat.toFixed(6)+', '+latlng.lng.toFixed(6);
+      }
+    }
+
+    map.on('click', function(e){
+      // first click sets pickup if empty, second sets drop, then alternate
+      if(!pickupMarker) setMarker(e.latlng,'pickup');
+      else if(!dropMarker) setMarker(e.latlng,'drop');
+      else { // if both present, replace drop
+        setMarker(e.latlng,'drop');
+      }
+    });
+
+    // try geolocation for current location
+    function setCurrentLocationAsPickup(){
+      if(!navigator.geolocation) { alert('Geolocation not supported'); return; }
+      navigator.geolocation.getCurrentPosition(pos=>{
+        const latlng = {lat: pos.coords.latitude, lng: pos.coords.longitude};
+        setMarker(latlng,'pickup');
+        map.setView(latlng,14);
+      }, err=>{alert('Unable to get location: '+err.message)})
+    }
+
+    // haversine distance (km)
+    function haversine(a,b){
+      const toRad = v => v * Math.PI / 180;
+      const R = 6371; // km
+      const dLat = toRad(b.lat - a.lat);
+      const dLon = toRad(b.lng - a.lng);
+      const lat1 = toRad(a.lat); const lat2 = toRad(b.lat);
+      const sinDlat = Math.sin(dLat/2);
+      const sinDlon = Math.sin(dLon/2);
+      const aa = sinDlat*sinDlat + sinDlon*sinDlon * Math.cos(lat1)*Math.cos(lat2);
+      const c = 2 * Math.atan2(Math.sqrt(aa), Math.sqrt(1-aa));
+      return R * c;
+    }
+
+    document.getElementById('estimate').addEventListener('click', ()=>{
+      if(!pickupMarker || !dropMarker){ alert('Please set both pickup and drop on the map (click to set).'); return; }
+      const a = pickupMarker.getLatLng(); const b = dropMarker.getLatLng();
+      const km = toFixed2(haversine(a,b));
+      const fare = Math.max( Math.ceil(km * RATE_PER_KM), RATE_PER_KM ); // minimum one km
+      document.getElementById('distance').innerText = km;
+      document.getElementById('fare').innerText = '₹' + fare;
+    });
+
+    document.getElementById('request-ride').addEventListener('click', ()=>{
+      if(!pickupMarker || !dropMarker){ alert('Please select pickup and drop points and then click Estimate.'); return; }
+      alert('Request received (demo). For real service, integrate with your backend/dispatch. Contact: ' + document.getElementById('contact').innerText);
+    });
+
+    // chat demo
+    const chatBox = document.getElementById('chat-box');
+    const chatInput = document.getElementById('chat-input');
+    function addMessage(text, who='bot'){
+      const d = document.createElement('div'); d.className = 'message ' + (who==='me'?'me':'bot'); d.innerText = text; chatBox.appendChild(d); chatBox.scrollTop = chatBox.scrollHeight;
+    }
+    function botReply(userText){
+      const low = userText.toLowerCase();
+      if(low.includes('fare')) addMessage('Fare is ₹25 per km. Use the map to estimate total fare.');
+      else if(low.includes('contact')) addMessage('Owner: Kennedy Nong. Contact: TBD.');
+      else if(low.includes('book')) addMessage('To request a ride, set pickup and drop on the map and click Request Ride.');
+      else addMessage('Thanks for messaging EcoCab Imphal. For live support call our contact number (TBD) or leave feedback in the Feedback section.');
+    }
+    document.getElementById('send-chat').addEventListener('click', ()=>{
+      const txt = chatInput.value.trim(); if(!txt) return; addMessage(txt,'me'); chatInput.value=''; setTimeout(()=>botReply(txt),700);
+    });
+
+    // feedback storage
+    const FB_KEY = 'ecocab_feedback_v1';
+    function loadFeedback(){ const raw = localStorage.getItem(FB_KEY); return raw?JSON.parse(raw):[]; }
+    function saveFeedback(item){ const arr = loadFeedback(); arr.push(item); localStorage.setItem(FB_KEY, JSON.stringify(arr)); }
+
+    document.getElementById('feedback-form').addEventListener('submit', e=>{
+      e.preventDefault();
+      const item = {name:document.getElementById('fb-name').value, contact:document.getElementById('fb-contact').value, type:document.getElementById('fb-type').value, message:document.getElementById('fb-message').value, date: new Date().toISOString() };
+      saveFeedback(item); alert('Thank you — your message has been recorded locally (demo).'); e.target.reset();
+    });
+
+    document.getElementById('download-logs').addEventListener('click', ()=>{
+      const arr = loadFeedback(); if(!arr.length){ alert('No feedback logged yet'); return; }
+      const blob = new Blob([JSON.stringify(arr, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download='ecocab_feedback.json'; a.click(); URL.revokeObjectURL(url);
+    });
+
+    // set contact placeholders in footer
+    document.getElementById('contact-footer').innerText = document.getElementById('contact').innerText;
+
+    // helper: button to use current location
+    const curLocBtn = L.control({position:'topleft'});
+    curLocBtn.onAdd = function(){ const el = L.DomUtil.create('div',''); el.innerHTML = '<button class="btn" id="use-loc" title="Use current location">Use my location</button>'; return el; }
+    curLocBtn.addTo(map);
+    document.addEventListener('click', function(e){ if(e.target && e.target.id==='use-loc') setCurrentLocationAsPickup(); });
+
+    // initial demo bot welcome
+    addMessage('Welcome to EcoCab Imphal! Ask about fares, booking and our services.');
+
+    // populate year
+    document.getElementById('year').innerText = new Date().getFullYear();
+  </script>
+</body>
+</html>
